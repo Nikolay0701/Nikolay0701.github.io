@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Anomaly Zone - Кордон</title>
+  <style>
+    @font-face {
+      font-family: 'StalkerAlt';
+      src: url('https://fonts.cdnfonts.com/s/102047/Road_Rage.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    body {
+      margin: 0;
+      background:  url('https://i.ibb.co.com/27NtkgPF/1.png') no-repeat center center fixed;
+      background-size: cover;
+      overflow: hidden;
+    }
+
+    .metal-frame {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 4;
+      box-shadow: inset 0 0 8vh rgba(0,0,0,0.4);
+    }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+      mix-blend-mode: overlay;
+    }
+
+    /* Заголовок */
+    .title {
+      position: fixed;
+      top: 5vh;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 6;
+      color: #ffb84d;
+      font-family: 'StalkerAlt', sans-serif;
+      font-size: 3vw;
+      letter-spacing: 0.1vw;
+      text-shadow: 0 0.3vh 0 rgba(0,0,0,0.8), 0 0 1.2vh rgba(255,140,0,0.3);
+      white-space: nowrap;
+    }
+
+    /* Загрузка */
+    .loading {
+      position: fixed;
+      left: 50%;
+      bottom: 28vh;
+      transform: translateX(-50%);
+      z-index: 7;
+      font-family: 'consolas', sans-serif;
+      font-size: 2vw;   /* уменьшил */
+      color: #ffb84d;
+      text-shadow: 0 0 1vh rgba(255, 180, 77, 0.7);
+    }
+
+    /* Блок советов */
+    .tips {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 9vh;
+      z-index: 6;
+      width: 90vw;
+      color: #ffdb99;
+      font-family: Inter, 'monospace', sans-serif;
+      font-size: 1vw;   /* уменьшил */
+      text-align: center;
+      padding: 0;       /* убрал внутренние отступы */
+      background: none; /* убрал черную подложку */
+    }
+
+    .tips h3 {
+      margin: 0 0 0.5vh 0;
+      color: #ffb84d;
+      font-family: 'monospace', sans-serif;
+      font-size: 1vw;   /* уменьшил */
+    }
+
+    .tips #tipText {
+      margin-top: 0.5vh;
+      font-size: 1vw;
+    }
+
+    .hud-scan {
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      background-image: linear-gradient(transparent 30%, rgba(0,0,0,0.02) 31%);
+      background-size: 100% 6px;
+      opacity: 0.25;
+    }
+
+    /* Иконка радиации */
+    .radiation-icon {
+      position: fixed;
+      bottom: 3vh;
+      left: 2vw;
+      width: 8vh;
+      height: 8vh;
+      z-index: 7;
+      animation: spin 6s linear infinite;
+      filter: drop-shadow(0 0 1vh rgba(255, 180, 77, 0.7));
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .radiation-container {
+      position: fixed;
+      bottom: 3vh;
+      left: 2vw;
+      width: 8vh;
+      height: 8vh;
+      z-index: 6;
+      pointer-events: none;
+    }
+
+    .radiation-glow {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,180,77,0.3) 0%, transparent 70%);
+      animation: pulse 3s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      100% { transform: scale(1.2); opacity: 0.9; }
+    }
+  </style>
+</head>
+<body>
+  <div class="metal-frame"></div>
+  <div class="grain"></div>
+  <div class="hud-scan"></div>
+
+
+  <div class="radiation-container">
+    <div class="radiation-glow"></div>
+  </div>
+
+  <img class="radiation-icon" src="https://i.ibb.co/wFtGKqX7/238545-removebg-preview.png" alt="Radiation Icon">
+
+  <div class="loading" id="loading">Загрузка</div>
+
+  <div class="tips">
+    <h3>Совет:</h3>
+    <div id="tipText"></div>
+  </div>
+
+  <script>
+    const tips = [
+      'В Зоне нет случайностей — если нашёл артефакт слишком легко, значит, рядом что-то тебя уже ждёт.',
+      'Патроны — это валюта. Береги их, торгуй ими, но никогда не оставайся без пары магазинов в запасе.',
+      'Аномалия «Воронка» тянет вниз быстрее, чем успеешь выругаться. Болт в помощь — кидай, пока жив.',
+      'Не верь улыбкам наёмников. Их контракт всегда дороже твоей жизни.',
+      'Артефакт «Каменный цветок» красив, но радиоактивен — таскай с контейнером или умрёшь медленно.',
+      'Хабар в схронах редко лежит бесхозно — кто-то его туда положил и может вернуться.',
+      'Ночью в Зоне тишина громче выстрелов — прислушивайся, она подскажет, кто рядом.',
+      'Пси-излучение ломает не кости, а голову. Не недооценивай его.',
+      'Если услышал треск детектора — не суетись, а думай: артефакт рядом или ловушка?',
+      'Зона не любит глупых — будь хитрым, будь живым.'
+    ];
+
+    let tipIndex = 0;
+    const tipText = document.getElementById('tipText');
+
+    function showTip() {
+      tipText.textContent = tips[tipIndex];
+      tipIndex = (tipIndex + 1) % tips.length;
+    }
+
+    showTip();
+    setInterval(showTip, 30000);
+
+    const radiationIcon = document.querySelector('.radiation-icon');
+    setInterval(() => {
+      radiationIcon.style.filter = `drop-shadow(0 0 ${1 + Math.random() * 1.5}vh rgba(255, ${180 + Math.random() * 55}, 77, ${0.6 + Math.random() * 0.4}))`;
+    }, 1000);
+
+    const loading = document.getElementById("loading");
+    let dots = 0;
+    setInterval(() => {
+      dots = (dots + 1) % 4;
+      loading.textContent = "Загрузка" + ".".repeat(dots);
+    }, 2000);
+  </script>
+</body>
+</html>
